@@ -51,7 +51,7 @@ u1 = User{id=1, name=DavidChen, age=23, birth=Wed Jan 16 01:08:30 CST 2019, glas
 ```
 ## Rules
 * `(*obj ...)` - Object
-* `(name value)` - Key-Value Pair
+* `(key value)` - Key-Value Pair
 * `(*list ...)` - Array
 
 ## Usage
