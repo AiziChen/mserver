@@ -19,7 +19,7 @@ https://github.com/AiziChen/SObj-typescript.git
   (height 167.3)
   (goods (*list
     (*obj (name "火龙果") (price 2.3))
-    (*obj (name "雪梨") (price 3.2)))))
+    (*obj (name "雪梨") (price 3.2))))
   (behaviors (*list "Shopping""Running""Football")))
 ```
 > JSON
