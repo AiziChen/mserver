@@ -7,6 +7,7 @@ package test.domain;
 
 import org.quanye.sobj.annotation.DateFormat;
 
+import java.util.Arrays;
 import java.util.Date;
 
 /**
@@ -105,8 +106,15 @@ public class User {
 
     @Override
     public String toString() {
-        return "User{" + "id=" + id + ", name=" + name + ", age=" + age + ", birth=" + birth + ", glasses=" + glasses + ", height=" + height + ", goods=" + goods + ", behaviors=" + behaviors + '}';
+        return "User{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", age=" + age +
+                ", birth=" + birth +
+                ", glasses=" + glasses +
+                ", height=" + height +
+                ", goods=" + Arrays.toString(goods) +
+                ", behaviors=" + Arrays.toString(behaviors) +
+                '}';
     }
-
-
 }

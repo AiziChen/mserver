@@ -13,13 +13,23 @@ package test.domain;
 public class Goods {
     private String name;
     private Float price;
+    private Boolean isVegetable;
 
     public Goods() {
     }
 
-    public Goods(String name, Float price) {
+    public Goods(String name, Float price, boolean isVegetable) {
         this.name = name;
         this.price = price;
+        this.isVegetable = isVegetable;
+    }
+
+    public boolean isVegetable() {
+        return isVegetable;
+    }
+
+    public void setVegetable(boolean vegetable) {
+        isVegetable = vegetable;
     }
 
     public String getName() {
@@ -40,8 +50,10 @@ public class Goods {
 
     @Override
     public String toString() {
-        return "Goods{" + "name=" + name + ", size=" + price + '}';
+        return "Goods{" +
+                "name='" + name + '\'' +
+                ", price=" + price +
+                ", isVegetable=" + isVegetable +
+                '}';
     }
-
-
 }
