@@ -1,7 +1,7 @@
 package org.quanye.sobj;
 
 import org.quanye.sobj.annotation.DateFormat;
-import org.quanye.sobj.exception.NotValidSObjSyntaxExcption;
+import org.quanye.sobj.exception.NotValidSObjSyntaxException;
 import org.quanye.sobj.struct.Cons;
 import org.quanye.sobj.tools.C$;
 import org.quanye.sobj.tools.S$;
@@ -35,6 +35,8 @@ public class SObjParser {
     public static final char SEPARATOR_C = ' ';
     public static final String NULL = "()";
     public static final char COMMENT_C = ';';
+    public static final String FALSE_VALUE = "#f";
+    public static final String TRUE_VALUE = "#t";
 
     /**
      * Parse the Object to the SObj
@@ -48,7 +50,6 @@ public class SObjParser {
         Field[] fields = clazz.getDeclaredFields();
         for (Field field : fields) {
             field.setAccessible(true);
-            String name = field.getName();
             try {
                 Object value = field.get(obj);
                 if (value instanceof String) {
@@ -63,6 +64,8 @@ public class SObjParser {
                             value = String.format("\"%s\"", sdf.format((Date) tmp));
                         }
                     }
+                } else if (value instanceof Boolean) {
+                    value = ((boolean) value) ? TRUE_VALUE : FALSE_VALUE;
                 } else if (value.getClass().isArray()) {
                     Object[] values = (Object[]) value;
                     StringBuilder sb = new StringBuilder();
@@ -76,11 +79,11 @@ public class SObjParser {
                     }
                     sb.append(BRACKET_CLOSE);
                     value = sb.toString();
-                }
-                // If clazz is a user-define type(in this must the POJO-type), then extract it
-                else if (value.getClass().getClassLoader() != null) {
+                } else if (value.getClass().getClassLoader() != null) {
+                    // If clazz is a user-defined type(in there must the POJO-type), then extract it
                     value = fromObject(value);
                 }
+                String name = field.getName();
                 result.append(BRACKET_START).append(name).append(SEPARATOR_C).append(value).append(BRACKET_CLOSE);
             } catch (Exception e) {
                 System.err.println(e.getMessage());
@@ -91,10 +94,10 @@ public class SObjParser {
     }
 
 
-    public static <T> T toObject(String sexp, Class<T> clazz) throws NotValidSObjSyntaxExcption {
+    public static <T> T toObject(String sexp, Class<T> clazz) throws NotValidSObjSyntaxException {
         sexp = S$.removeBoilerplateEmptyCode(sexp);
         if (!S$.isValidSexp(sexp)) {
-            throw new NotValidSObjSyntaxExcption("invalid SObj syntax");
+            throw new NotValidSObjSyntaxException("invalid SObj syntax");
         }
         Cons lo = toAST(sexp);
         try {
@@ -113,11 +116,11 @@ public class SObjParser {
         // Key
         if (firstV == null && leftV != null) {
             String key = cons.getCarValue();
-            String value = leftV.getCarValue();
-            String pkgName = target.getClass().getPackage().getName();
-            String clazzName = key.substring(0, 1).toUpperCase() + key.substring(1);
-            if (S$.isSObj(value)) {
-                if (!clazzName.equals(OBJECT_NAME) && !clazzName.equals(LIST_NAME)) {
+            if (!(key.equals(OBJECT_NAME) || key.equals(LIST_NAME))) {
+                String value = leftV.getCarValue();
+                if (C$.isSObj(value)) {
+                    String pkgName = target.getClass().getPackage().getName();
+                    String clazzName = key.substring(0, 1).toUpperCase() + key.substring(1);
                     try {
                         Class<?> clazz = Class.forName(pkgName + "." + clazzName);
                         Object instance = setValue(leftV.getCar(), clazz.getDeclaredConstructor().newInstance());
@@ -125,45 +128,49 @@ public class SObjParser {
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
-                }
-            } else if (C$.isList(value)) {
-                Cons arrCons = toAST(S$.cdr(value));
-                if (S$.isSObj(arrCons.getCarValue())) {
-                    try {
-                        Class<?> clazz = Class.forName(String.format("%s.%s", pkgName, clazzName));
+                } else if (C$.isList(value)) {
+                    Cons arrCons = toAST(S$.cdr(value));
+                    if (C$.isSObj(arrCons.getCarValue())) {
+                        String pkgName = target.getClass().getPackage().getName();
+                        String clazzName = key.substring(0, 1).toUpperCase() + key.substring(1);
+                        try {
+                            Class<?> clazz = Class.forName(String.format("%s.%s", pkgName, clazzName));
+                            List<Object> list = new ArrayList<>();
+                            while (arrCons != null && arrCons.getCar() != null) {
+                                Object instance = setValue(arrCons.getCar(), clazz.getDeclaredConstructor().newInstance());
+                                list.add(instance);
+                                arrCons = arrCons.getCdr();
+                            }
+                            if (list.size() > 0) {
+                                Object arr = Array.newInstance(clazz, list.size());
+                                putArray(list, arr, target, key);
+                            }
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    } else {
                         List<Object> list = new ArrayList<>();
-                        while (arrCons != null && arrCons.getCar() != null) {
-                            Object instance = setValue(arrCons.getCar(), clazz.getDeclaredConstructor().newInstance());
-                            list.add(instance);
+                        String carV = arrCons.getCarValue();
+                        while (arrCons != null) {
+                            String v = arrCons.getCarValue();
+                            list.add(v);
                             arrCons = arrCons.getCdr();
                         }
-                        if (list.size() > 0) {
-                            Object arr = Array.newInstance(clazz, list.size());
-                            putArray(list, arr, target, key);
+                        try {
+                            if (carV != null && list.size() > 0) {
+                                Object arr = Array.newInstance(C$.getType(carV), list.size());
+                                putArray(list, arr, target, key);
+                            }
+                        } catch (ClassNotFoundException e) {
+                            e.printStackTrace();
                         }
-                    } catch (Exception e) {
-                        e.printStackTrace();
                     }
+                    // 这个必需要 5555......T_T..... 数组以上已经处理完，不需要再扔给setValue处理。
+                    return target;
                 } else {
-                    List<Object> list = new ArrayList<>();
-                    String carV = arrCons.getCarValue();
-                    while (arrCons != null) {
-                        String v = arrCons.getCarValue();
-                        list.add(v);
-                        arrCons = arrCons.getCdr();
-                    }
-                    try {
-                        if (carV != null && list.size() > 0) {
-                            Object arr = Array.newInstance(C$.getType(carV), list.size());
-                            putArray(list, arr, target, key);
-                        }
-                    } catch (ClassNotFoundException e) {
-                        e.printStackTrace();
-                    }
+                    value = C$.trimStr(value);
+                    putField(target, key, value);
                 }
-            } else {
-                value = C$.trimStr(value);
-                putField(target, key, value);
             }
         }
 
@@ -204,6 +211,12 @@ public class SObjParser {
             field.setAccessible(true);
             Class<?> typeClazz = field.getType();
             if (C$.isPrimitive(typeClazz)) {
+                // Change `TURE_VALUE` and `FALSE_VALUE` to `true` and `false`
+                if (value.equals(TRUE_VALUE)) {
+                    value = "true";
+                } else if (value.equals(FALSE_VALUE)) {
+                    value = "false";
+                }
                 try {
                     Constructor<?> c = typeClazz.getConstructor(String.class);
                     field.set(target, c.newInstance(value));

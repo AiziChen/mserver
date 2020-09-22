@@ -16,11 +16,11 @@ public class S$ {
     public static String removeBoilerplateEmptyCode(String sexp) {
         /* example:
          * ;; define and obj
-         * (obj ;; obj
+         * (*obj ;; obj
          *   (name "DavidChen") ;; name
          *   (age 26))  ;; age
          * ---->
-         * (obj
+         * (*obj
          *   (name "David")
          *   (age 26))
          */
@@ -29,7 +29,7 @@ public class S$ {
             return i != -1 ? s.substring(0, i) : s;
         }).collect(Collectors.joining());
 
-        // example: (  a  (  b c  )  ) -> (a(b c))
+        // example: (  a  (  b  c  )  ) -> (a(b  c))
         sexp = sexp.replaceAll("(\\s*)(\\()(\\s*)", BRACKET_START);
         sexp = sexp.replaceAll("(\\s*)(\\))(\\s*)", BRACKET_CLOSE);
 
@@ -66,19 +66,6 @@ public class S$ {
             return false;
         }
         return (S$.isValidSexp(sexp));
-    }
-
-
-    public static boolean isSObj(String sexp) {
-        if (!sexp.startsWith(BRACKET_OBJECT)) {
-            return false;
-        }
-
-        if (isNull(sexp)) {
-            return false;
-        }
-
-        return S$.isValidSexp(sexp);
     }
 
 

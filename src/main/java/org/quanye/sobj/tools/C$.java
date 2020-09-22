@@ -19,6 +19,11 @@ public class C$ {
     }
 
 
+    public static boolean isSObj(String sexp) {
+        return sexp.startsWith(BRACKET_OBJECT) && sexp.endsWith(BRACKET_CLOSE);
+    }
+
+
     public static boolean isList(String sexp) {
         return sexp.startsWith(BRACKET_LIST) && sexp.endsWith(BRACKET_CLOSE);
     }
