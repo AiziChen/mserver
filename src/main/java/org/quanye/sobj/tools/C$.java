@@ -13,36 +13,9 @@ import static org.quanye.sobj.SObjParser.*;
  */
 public class C$ {
 
-    public static boolean isSObj(String sexp) {
-        if (!sexp.startsWith(BRACKET_OBJECT)) {
-            return false;
-        }
-
-        if (isEmpty(sexp)) {
-            return false;
-        }
-
-        int bStart = 0;
-        int bClose = 0;
-        for (int i = 0; i < sexp.length(); ++i) {
-            char c = sexp.charAt(i);
-            if (c == BRACKET_START_C) {
-                bStart++;
-            } else if (c == BRACKET_CLOSE_C) {
-                bClose++;
-                if (bClose == bStart) {
-                    return true;
-                }
-            }
-        }
-
-        return false;
-    }
-
-
     public static boolean isString(String sexp) {
         int len = sexp.length();
-        return sexp.charAt(0) == '\"' && sexp.charAt(len - 1) == '\"';
+        return len > 1 && sexp.charAt(0) == '\"' && sexp.charAt(len - 1) == '\"';
     }
 
 
@@ -51,20 +24,15 @@ public class C$ {
     }
 
 
-    public static boolean isEmpty(String sexp) {
-        return sexp.equals(NULL);
-    }
-
-
     /**
-     * Whether object is the primitive-type
+     * Whether type-class is the primitive-type
      *
-     * @param clazz
-     * @return
+     * @param clazz object's type class
+     * @return When the type clazz is the primitive-type, return true, others false
      */
     public static boolean isPrimitive(Class<?> clazz) {
         String cName = clazz.getName();
-        if (cName.equals("java.lang.Integer")
+        return cName.equals("java.lang.Integer")
                 || cName.equals("java.lang.Boolean")
                 || cName.equals("java.lang.Long")
                 || cName.equals("java.lang.Character")
@@ -72,11 +40,7 @@ public class C$ {
                 || cName.equals("java.lang.Double")
                 || cName.equals("java.lang.Byte")
                 || cName.equals("java.lang.Short")
-                || cName.equals("java.lang.String")) {
-            return true;
-        } else {
-            return false;
-        }
+                || cName.equals("java.lang.String");
     }
 
 
@@ -89,9 +53,11 @@ public class C$ {
 
 
     public static Class<?> getType(String value) throws ClassNotFoundException {
-        if (value.startsWith("\"") && value.endsWith("\"")) {
+        char startC = value.charAt(0);
+        char endC = value.charAt(value.length() - 1);
+        if (startC == '\"' && endC == '\"') {
             return Class.forName("java.lang.String");
-        } else if (value.startsWith("'") && value.endsWith("'")) {
+        } else if (startC == '\'' && endC == '\'') {
             return Class.forName("java.lang.Character");
         } else if (value.contains(".")) {
             return Class.forName("java.lang.Double");
@@ -102,38 +68,13 @@ public class C$ {
 
 
     public static Field getFieldByName(Object target, String fieldName) {
-        Field[] dfields = target.getClass().getDeclaredFields();
-        for (Field dfield : dfields) {
-            if (dfield.getName().equals(fieldName)) {
-                return dfield;
+        Field[] dfs = target.getClass().getDeclaredFields();
+        for (Field df : dfs) {
+            if (df.getName().equals(fieldName)) {
+                return df;
             }
         }
         return null;
     }
 
-    public static boolean isSexp(String sexp) {
-        if (!sexp.startsWith(BRACKET_START)) {
-            return false;
-        }
-
-        if (isEmpty(sexp)) {
-            return false;
-        }
-
-        int bStart = 0;
-        int bClose = 0;
-        for (int i = 0; i < sexp.length(); ++i) {
-            char c = sexp.charAt(i);
-            if (c == BRACKET_START_C) {
-                bStart++;
-            } else if (c == BRACKET_CLOSE_C) {
-                bClose++;
-                if (bClose == bStart) {
-                    return true;
-                }
-            }
-        }
-
-        return false;
-    }
 }

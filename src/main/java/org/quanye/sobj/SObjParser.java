@@ -16,18 +16,17 @@ import java.util.Date;
 import java.util.List;
 
 /**
- * LispParser
+ * SObj Parser
  * This source code is license on the Apache-License v2.0
  *
  * @author QuanyeChen
  */
 public class SObjParser {
-
     private static final SimpleDateFormat sdf = new SimpleDateFormat(DateFormat.FORMAT_STYLE);
     public static final String BRACKET_START = "(";
-    public static final char BRACKET_START_C = BRACKET_START.charAt(0);
+    public static final char BRACKET_START_C = '(';
     public static final String BRACKET_CLOSE = ")";
-    public static final char BRACKET_CLOSE_C = BRACKET_CLOSE.charAt(0);
+    public static final char BRACKET_CLOSE_C = ')';
     public static final String BRACKET_OBJECT = "(*obj";
     public static final String BRACKET_LIST = "(*list";
     public static final String SEPARATOR = " ";
@@ -36,14 +35,14 @@ public class SObjParser {
     public static final char COMMENT_C = ';';
 
     /**
-     * Write the Object to the String
+     * Parse the Object to the SObj
      *
-     * @param obj
-     * @return
+     * @param obj Object
+     * @return SObj
      */
     public static String fromObject(Object obj) {
         StringBuilder result = new StringBuilder(BRACKET_OBJECT);// + obj.getClass().getSimpleName());
-        Class clazz = obj.getClass();
+        Class<?> clazz = obj.getClass();
         Field[] fields = clazz.getDeclaredFields();
         for (Field field : fields) {
             field.setAccessible(true);
@@ -82,7 +81,7 @@ public class SObjParser {
                 }
                 result.append(BRACKET_START).append(name).append(SEPARATOR_C).append(value).append(BRACKET_CLOSE);
             } catch (Exception e) {
-                System.out.println(e);
+                System.err.println(e.getMessage());
             }
         }
         result.append(BRACKET_CLOSE);
@@ -97,41 +96,42 @@ public class SObjParser {
         }
         Cons lo = toAST(sexp);
         try {
-            return (T) setValue(lo, clazz.newInstance());
+            return setValue(lo, clazz.getDeclaredConstructor().newInstance());
         } catch (Exception e) {
             e.printStackTrace();
+            return null;
         }
-        return (T) new Object();
     }
 
 
-    private static Object setValue(Cons cons, Object target) {
-        Cons car = cons.getCar();
-        Cons cdr = cons.getCdr();
+    private static <T> T setValue(Cons cons, T target) {
+        Cons firstV = cons.getCar();
+        Cons leftV = cons.getCdr();
 
         // Key
-        if (car == null && cdr != null) {
+        if (firstV == null && leftV != null) {
             String key = cons.getCarValue();
-            String value = cdr.getCarValue();
+            String value = leftV.getCarValue();
             String pkgName = target.getClass().getPackage().getName();
             String clazzName = key.substring(0, 1).toUpperCase() + key.substring(1);
-            if (C$.isSObj(value)) {
-                if (!clazzName.equals("*obj") && !clazzName.equals("*list"))
+            if (S$.isSObj(value)) {
+                if (!clazzName.equals("*obj") && !clazzName.equals("*list")) {
                     try {
                         Class<?> clazz = Class.forName(pkgName + "." + clazzName);
-                        Object instance = setValue(cdr.getCar(), clazz.newInstance());
+                        Object instance = setValue(leftV.getCar(), clazz.getDeclaredConstructor().newInstance());
                         putField(target, instance, key);
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
+                }
             } else if (C$.isList(value)) {
                 Cons arrCons = toAST(S$.cdr(value));
-                if (C$.isSObj(arrCons.getCarValue())) {
+                if (S$.isSObj(arrCons.getCarValue())) {
                     try {
                         Class<?> clazz = Class.forName(pkgName + "." + clazzName);
                         List<Object> list = new ArrayList<>();
                         while (arrCons != null && arrCons.getCar() != null) {
-                            Object instance = setValue(arrCons.getCar(), clazz.newInstance());
+                            Object instance = setValue(arrCons.getCar(), clazz.getDeclaredConstructor().newInstance());
                             list.add(instance);
                             arrCons = arrCons.getCdr();
                         }
@@ -146,7 +146,7 @@ public class SObjParser {
                     List<Object> list = new ArrayList<>();
                     String carV = arrCons.getCarValue();
                     while (arrCons != null) {
-                        String v = C$.trimStr(arrCons.getCarValue());
+                        String v = arrCons.getCarValue();
                         list.add(v);
                         arrCons = arrCons.getCdr();
                     }
@@ -166,13 +166,13 @@ public class SObjParser {
         }
 
         // car is a list
-        if (car != null) {
-            setValue(car, target);
+        if (firstV != null) {
+            setValue(firstV, target);
         }
 
         // not end list
-        if (cdr != null) {
-            setValue(cdr, target);
+        if (leftV != null) {
+            setValue(leftV, target);
         }
 
         return target;
@@ -182,13 +182,13 @@ public class SObjParser {
     private static Cons toAST(String sexp) {
         String carValue = S$.car(sexp);
         String cdrValue = S$.cdr(sexp);
-        Cons result = new Cons(carValue, "");
+        Cons result = new Cons(carValue);
 
-        if (C$.isSexp(carValue)) {
+        if (S$.isPair(carValue)) {
             result.setCar(toAST(carValue));
         }
 
-        if (C$.isSexp(cdrValue)) {
+        if (S$.isPair(cdrValue)) {
             result.setCdr(toAST(cdrValue));
         }
 
@@ -196,14 +196,14 @@ public class SObjParser {
     }
 
 
-    private static void putField(Object target, String key, String value) {
+    private static <T> void putField(T target, String key, String value) {
         Field field = C$.getFieldByName(target, key);
         if (field != null) {
             field.setAccessible(true);
             Class<?> typeClazz = field.getType();
             if (C$.isPrimitive(typeClazz)) {
                 try {
-                    Constructor c = typeClazz.getConstructor(String.class);
+                    Constructor<?> c = typeClazz.getConstructor(String.class);
                     field.set(target, c.newInstance(value));
                 } catch (Exception e) {
                     e.printStackTrace();

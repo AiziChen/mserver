@@ -52,6 +52,36 @@ public class S$ {
         return lb == rb;
     }
 
+
+    public static boolean isNull(String sexp) {
+        return sexp.equals(NULL);
+    }
+
+
+    public static boolean isPair(String sexp) {
+        if (!sexp.startsWith(BRACKET_START)) {
+            return false;
+        }
+        if (isNull(sexp)) {
+            return false;
+        }
+        return (S$.isValidSexp(sexp));
+    }
+
+
+    public static boolean isSObj(String sexp) {
+        if (!sexp.startsWith(BRACKET_OBJECT)) {
+            return false;
+        }
+
+        if (isNull(sexp)) {
+            return false;
+        }
+
+        return S$.isValidSexp(sexp);
+    }
+
+
     public static String car(String sexp) {
         int i = 1;
         if (sexp.charAt(1) == BRACKET_START_C) {
