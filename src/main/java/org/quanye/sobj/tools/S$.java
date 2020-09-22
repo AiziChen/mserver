@@ -34,7 +34,7 @@ public class S$ {
         sexp = sexp.replaceAll("(\\s*)(\\))(\\s*)", BRACKET_CLOSE);
 
         // example: (a(b   c)) -> (a(b c))
-        sexp = sexp.replaceAll("\\s+", " ");
+        sexp = sexp.replaceAll("\\s+", SEPARATOR);
 
         return sexp;
     }

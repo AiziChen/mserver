@@ -28,7 +28,9 @@ public class SObjParser {
     public static final String BRACKET_CLOSE = ")";
     public static final char BRACKET_CLOSE_C = ')';
     public static final String BRACKET_OBJECT = "(*obj";
+    public static final String OBJECT_NAME = "*obj";
     public static final String BRACKET_LIST = "(*list";
+    public static final String LIST_NAME = "*list";
     public static final String SEPARATOR = " ";
     public static final char SEPARATOR_C = ' ';
     public static final String NULL = "()";
@@ -50,15 +52,15 @@ public class SObjParser {
             try {
                 Object value = field.get(obj);
                 if (value instanceof String) {
-                    value = "\"" + value + "\"";
+                    value = String.format("\"%s\"", value);
                 } else if (value instanceof Date) {
                     Object tmp = value;
-                    value = "\"" + sdf.format(value) + "\"";
+                    value = String.format("\"%s\"", sdf.format(value));
                     for (Annotation an : field.getAnnotations()) {
                         if (an instanceof DateFormat) {
                             DateFormat df = (DateFormat) an;
                             sdf.applyPattern(df.value());
-                            value = "\"" + sdf.format((Date) tmp) + "\"";
+                            value = String.format("\"%s\"", sdf.format((Date) tmp));
                         }
                     }
                 } else if (value.getClass().isArray()) {
@@ -67,7 +69,7 @@ public class SObjParser {
                     sb.append(BRACKET_LIST);
                     for (Object v : values) {
                         if (v instanceof String) {
-                            sb.append("\"").append(v).append("\"");
+                            sb.append('\"').append(v).append('\"');
                         } else {
                             sb.append(fromObject(v));
                         }
@@ -115,7 +117,7 @@ public class SObjParser {
             String pkgName = target.getClass().getPackage().getName();
             String clazzName = key.substring(0, 1).toUpperCase() + key.substring(1);
             if (S$.isSObj(value)) {
-                if (!clazzName.equals("*obj") && !clazzName.equals("*list")) {
+                if (!clazzName.equals(OBJECT_NAME) && !clazzName.equals(LIST_NAME)) {
                     try {
                         Class<?> clazz = Class.forName(pkgName + "." + clazzName);
                         Object instance = setValue(leftV.getCar(), clazz.getDeclaredConstructor().newInstance());
@@ -128,7 +130,7 @@ public class SObjParser {
                 Cons arrCons = toAST(S$.cdr(value));
                 if (S$.isSObj(arrCons.getCarValue())) {
                     try {
-                        Class<?> clazz = Class.forName(pkgName + "." + clazzName);
+                        Class<?> clazz = Class.forName(String.format("%s.%s", pkgName, clazzName));
                         List<Object> list = new ArrayList<>();
                         while (arrCons != null && arrCons.getCar() != null) {
                             Object instance = setValue(arrCons.getCar(), clazz.getDeclaredConstructor().newInstance());
