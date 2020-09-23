@@ -40,14 +40,19 @@ public class S$ {
     public static boolean isValidSexp(String sexp) {
         int lb = 0;
         int rb = 0;
-        for (int i = 0; i < sexp.length(); ++i) {
+        int i = 0;
+        int sLen = sexp.length();
+        for (; i < sLen; ++i) {
             if (BRACKET_START_C == sexp.charAt(i)) {
                 lb++;
             } else if (BRACKET_CLOSE_C == sexp.charAt(i)) {
                 rb++;
+                if (rb == lb) {
+                    break;
+                }
             }
         }
-        return lb == rb;
+        return (lb == rb) && ((i + 1) == sLen);
     }
 
 
@@ -60,10 +65,7 @@ public class S$ {
         if (!sexp.startsWith(BRACKET_START)) {
             return false;
         }
-        if (isNull(sexp)) {
-            return false;
-        }
-        return (S$.isValidSexp(sexp));
+        return !isNull(sexp);
     }
 
 
