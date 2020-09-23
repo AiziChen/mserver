@@ -29,7 +29,17 @@ public class SExpTest {
     public void isValidSexpTest() {
         String s = "(  a  (  b    c  )  )";
         assert isValidSexp(s);
-        String s2 = "(obj (a b )";
-        assert !isValidSexp(s2);
+
+        s = "(obj (a b )";
+        assert !isValidSexp(s);
+
+        s = "(obj (a b )))";
+        assert !isValidSexp(s);
+
+        s = "(()) ()";
+        assert !isValidSexp(s);
+
+        s = ")))(((";
+        assert !isValidSexp(s);
     }
 }
