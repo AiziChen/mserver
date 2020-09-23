@@ -24,11 +24,14 @@ public class S$ {
          *   (name "David")
          *   (age 26))
          */
-        sexp = sexp.replaceAll("(;)(.*)(\n)", "");
+        String regex = String.format("(%s)(.*)(\n)", COMMENT_C);
+        sexp = sexp.replaceAll(regex,  "");
 
         // example: (  a  (  b  c  )  ) -> (a(b  c))
-        sexp = sexp.replaceAll("(\\s*)(\\()(\\s*)", BRACKET_START);
-        sexp = sexp.replaceAll("(\\s*)(\\))(\\s*)", BRACKET_CLOSE);
+        regex = String.format("(\\s*)(\\%c)(\\s*)", BRACKET_START_C);
+        sexp = sexp.replaceAll(regex, BRACKET_START);
+        regex = String.format("(\\s*)(\\%c)(\\s*)", BRACKET_CLOSE_C);
+        sexp = sexp.replaceAll(regex, BRACKET_CLOSE);
 
         // example: (a(b   c)) -> (a(b c))
         sexp = sexp.replaceAll("\\s+", SEPARATOR);
