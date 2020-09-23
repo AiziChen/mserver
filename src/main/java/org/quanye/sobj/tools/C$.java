@@ -37,15 +37,15 @@ public class C$ {
      */
     public static boolean isPrimitive(Class<?> clazz) {
         String cName = clazz.getName();
-        return cName.equals("java.lang.Integer")
-                || cName.equals("java.lang.Boolean")
+        return cName.equals("java.lang.String")
+                || cName.equals("java.lang.Integer")
                 || cName.equals("java.lang.Long")
+                || cName.equals("java.lang.Boolean")
                 || cName.equals("java.lang.Character")
                 || cName.equals("java.lang.Float")
                 || cName.equals("java.lang.Double")
                 || cName.equals("java.lang.Byte")
-                || cName.equals("java.lang.Short")
-                || cName.equals("java.lang.String");
+                || cName.equals("java.lang.Short");
     }
 
 
@@ -57,17 +57,18 @@ public class C$ {
     }
 
 
-    public static Class<?> getType(String value) throws ClassNotFoundException {
+    public static Class<?> getValueType(String value) {
         char startC = value.charAt(0);
         char endC = value.charAt(value.length() - 1);
-        if (startC == '\"' && endC == '\"') {
-            return Class.forName("java.lang.String");
-        } else if (startC == '\'' && endC == '\'') {
-            return Class.forName("java.lang.Character");
+        if (startC == '\'' && endC == '\'') {
+            return Character.class;
+        } else if (startC == '\"' || startC == '\'') {
+            // symbol is also treat as `String`
+            return String.class;
         } else if (value.contains(".")) {
-            return Class.forName("java.lang.Double");
+            return Double.class;
         } else {
-            return Class.forName("java.lang.Long");
+            return Long.class;
         }
     }
 

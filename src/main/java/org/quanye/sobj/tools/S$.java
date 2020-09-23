@@ -1,7 +1,5 @@
 package org.quanye.sobj.tools;
 
-import java.util.stream.Collectors;
-
 import static org.quanye.sobj.SObjParser.*;
 
 /**
@@ -25,7 +23,7 @@ public class S$ {
          *   (age 26))
          */
         String regex = String.format("(%s)(.*)(\n)", COMMENT_C);
-        sexp = sexp.replaceAll(regex,  "");
+        sexp = sexp.replaceAll(regex, "");
 
         // example: (  a  (  b  c  )  ) -> (a(b  c))
         regex = String.format("(\\s*)(\\%c)(\\s*)", BRACKET_START_C);

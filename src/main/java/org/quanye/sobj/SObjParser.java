@@ -2,7 +2,7 @@ package org.quanye.sobj;
 
 import org.quanye.sobj.annotation.DateFormat;
 import org.quanye.sobj.exception.NotValidSObjSyntaxException;
-import org.quanye.sobj.struct.Cons;
+import org.quanye.sobj.struct.SObjNode;
 import org.quanye.sobj.tools.C$;
 import org.quanye.sobj.tools.S$;
 
@@ -10,9 +10,11 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -99,7 +101,7 @@ public class SObjParser {
         if (!S$.isValidSexp(sexp)) {
             throw new NotValidSObjSyntaxException("invalid SObj syntax");
         }
-        Cons lo = toAST(sexp);
+        SObjNode lo = toAST(sexp);
         try {
             return setValue(lo, clazz.getDeclaredConstructor().newInstance());
         } catch (Exception e) {
@@ -109,13 +111,13 @@ public class SObjParser {
     }
 
 
-    private static <T> T setValue(Cons cons, T target) {
-        Cons firstV = cons.getCar();
-        Cons leftV = cons.getCdr();
+    private static <T> T setValue(SObjNode sobjNode, T target) {
+        SObjNode firstV = sobjNode.getCar();
+        SObjNode leftV = sobjNode.getCdr();
 
         // Key
         if (firstV == null && leftV != null) {
-            String key = cons.getCarValue();
+            String key = sobjNode.getCarValue();
             if (!(key.equals(OBJECT_NAME) || key.equals(LIST_NAME))) {
                 String value = leftV.getCarValue();
                 if (C$.isSObj(value)) {
@@ -125,47 +127,43 @@ public class SObjParser {
                         Class<?> clazz = Class.forName(pkgName + "." + clazzName);
                         Object instance = setValue(leftV.getCar(), clazz.getDeclaredConstructor().newInstance());
                         putField(target, instance, key);
-                    } catch (Exception e) {
+                    } catch (ClassNotFoundException | NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
                         e.printStackTrace();
                     }
                 } else if (C$.isList(value)) {
-                    Cons arrCons = toAST(S$.cdr(value));
-                    if (C$.isSObj(arrCons.getCarValue())) {
+                    SObjNode arrNode = toAST(S$.cdr(value));
+                    if (C$.isSObj(arrNode.getCarValue())) {
                         String pkgName = target.getClass().getPackage().getName();
                         String clazzName = key.substring(0, 1).toUpperCase() + key.substring(1);
                         try {
                             Class<?> clazz = Class.forName(String.format("%s.%s", pkgName, clazzName));
-                            List<Object> list = new ArrayList<>();
-                            while (arrCons != null && arrCons.getCar() != null) {
-                                Object instance = setValue(arrCons.getCar(), clazz.getDeclaredConstructor().newInstance());
+                            List<Object> list = new LinkedList<>();
+                            while (arrNode != null && arrNode.getCar() != null) {
+                                Object instance = setValue(arrNode.getCar(), clazz.getDeclaredConstructor().newInstance());
                                 list.add(instance);
-                                arrCons = arrCons.getCdr();
+                                arrNode = arrNode.getCdr();
                             }
                             if (list.size() > 0) {
                                 Object arr = Array.newInstance(clazz, list.size());
                                 putArray(list, arr, target, key);
                             }
-                        } catch (Exception e) {
+                        } catch (ClassNotFoundException | NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
                             e.printStackTrace();
                         }
                     } else {
-                        List<Object> list = new ArrayList<>();
-                        String carV = arrCons.getCarValue();
-                        while (arrCons != null) {
-                            String v = arrCons.getCarValue();
+                        List<Object> list = new LinkedList<>();
+                        String carV = arrNode.getCarValue();
+                        while (arrNode != null) {
+                            String v = arrNode.getCarValue();
                             list.add(v);
-                            arrCons = arrCons.getCdr();
+                            arrNode = arrNode.getCdr();
                         }
-                        try {
-                            if (carV != null && list.size() > 0) {
-                                Object arr = Array.newInstance(C$.getType(carV), list.size());
-                                putArray(list, arr, target, key);
-                            }
-                        } catch (ClassNotFoundException e) {
-                            e.printStackTrace();
+                        if (carV != null && list.size() > 0) {
+                            Object arr = Array.newInstance(C$.getValueType(carV), list.size());
+                            putArray(list, arr, target, key);
                         }
                     }
-                    // 这个必需要 5555......T_T..... 数组以上已经处理完，不需要再扔给setValue处理。
+                    // *list process had been done above, don't need to process by `setValue` ever.
                     return target;
                 } else {
                     value = C$.trimStr(value);
@@ -188,10 +186,10 @@ public class SObjParser {
     }
 
 
-    private static Cons toAST(String sexp) {
+    private static SObjNode toAST(String sexp) {
         String carValue = S$.car(sexp);
         String cdrValue = S$.cdr(sexp);
-        Cons result = new Cons(carValue);
+        SObjNode result = new SObjNode(carValue);
 
         if (S$.isPair(carValue)) {
             result.setCar(toAST(carValue));
@@ -220,7 +218,7 @@ public class SObjParser {
                 try {
                     Constructor<?> c = typeClazz.getConstructor(String.class);
                     field.set(target, c.newInstance(value));
-                } catch (Exception e) {
+                } catch (NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
                     e.printStackTrace();
                 }
             } else {
@@ -235,7 +233,7 @@ public class SObjParser {
                     }
                     try {
                         field.set(target, sdf.parse(value));
-                    } catch (Exception e) {
+                    } catch (ParseException | IllegalAccessException e) {
                         e.printStackTrace();
                     }
                 }

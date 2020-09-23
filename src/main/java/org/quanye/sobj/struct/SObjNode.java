@@ -6,12 +6,12 @@ package org.quanye.sobj.struct;
  *
  * @author QuanyeChen
  */
-public class Cons {
+public class SObjNode {
     private String carValue;
-    private Cons car;
-    private Cons cdr;
+    private SObjNode car;
+    private SObjNode cdr;
 
-    public Cons(String carValue) {
+    public SObjNode(String carValue) {
         this.carValue = carValue;
     }
 
@@ -23,19 +23,19 @@ public class Cons {
         this.carValue = carValue;
     }
 
-    public Cons getCar() {
+    public SObjNode getCar() {
         return car;
     }
 
-    public void setCar(Cons car) {
+    public void setCar(SObjNode car) {
         this.car = car;
     }
 
-    public Cons getCdr() {
+    public SObjNode getCdr() {
         return cdr;
     }
 
-    public void setCdr(Cons cdr) {
+    public void setCdr(SObjNode cdr) {
         this.cdr = cdr;
     }
 
