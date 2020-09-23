@@ -24,10 +24,7 @@ public class S$ {
          *   (name "David")
          *   (age 26))
          */
-        sexp = sexp.lines().map(s -> {
-            int i = s.indexOf(COMMENT_C);
-            return i != -1 ? s.substring(0, i) : s;
-        }).collect(Collectors.joining());
+        sexp = sexp.replaceAll("(;)(.*)(\n)", "");
 
         // example: (  a  (  b  c  )  ) -> (a(b  c))
         sexp = sexp.replaceAll("(\\s*)(\\()(\\s*)", BRACKET_START);
