@@ -187,16 +187,16 @@ public class SObjParser {
 
 
     private static SObjNode toAST(String sexp) {
-        String carValue = S$.car(sexp);
-        String cdrValue = S$.cdr(sexp);
-        SObjNode result = new SObjNode(carValue);
+        String firstV = S$.car(sexp);
+        String leftV = S$.cdr(sexp);
+        SObjNode result = new SObjNode(firstV);
 
-        if (S$.isPair(carValue)) {
-            result.setCar(toAST(carValue));
+        if (S$.isPair(firstV)) {
+            result.setCar(toAST(firstV));
         }
 
-        if (S$.isPair(cdrValue)) {
-            result.setCdr(toAST(cdrValue));
+        if (S$.isPair(leftV)) {
+            result.setCdr(toAST(leftV));
         }
 
         return result;
