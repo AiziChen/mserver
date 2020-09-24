@@ -2,7 +2,7 @@ package test;
 
 import org.junit.Test;
 import org.quanye.sobj.SObjParser;
-import org.quanye.sobj.exception.NotValidSObjSyntaxException;
+import org.quanye.sobj.exception.InValidSObjSyntaxException;
 import test.domain.Glasses;
 import test.domain.Goods;
 import test.domain.User;
@@ -39,7 +39,7 @@ public class BaseTest {
 
 
     @Test
-    public void toObjectTest() throws NotValidSObjSyntaxException {
+    public void toObjectTest() throws InValidSObjSyntaxException {
         String u1SObj = SObjParser.fromObject(u1);
         // Print the result object
         User result = SObjParser.toObject(u1SObj, User.class);
@@ -47,7 +47,7 @@ public class BaseTest {
     }
 
     @Test
-    public void toObjectPerformanceTest() throws NotValidSObjSyntaxException {
+    public void toObjectPerformanceTest() throws InValidSObjSyntaxException {
         String u1SObj = SObjParser.fromObject(u1);
         // Check parse 9999s user object
         long before = System.currentTimeMillis();
@@ -56,5 +56,14 @@ public class BaseTest {
         }
         long after = System.currentTimeMillis();
         System.out.println("Parse 9999 objects total time: " + (after - before) + "ms");
+    }
+
+
+    @Test
+    public void lessVariableTest() throws InValidSObjSyntaxException {
+        String sobj1 = "(*obj(id 1)(uid 0)(name \"DavidChen\")(age 25)(birth \"2020-09-24 09:50,07\")(glasses (*obj(price 115.5)(id 1)(degree 203.3)(color \"RED-BLACK\")))(height 167.3)(goods (*list(*obj(name \"火龙果\")(price 2.3)(isVegetable #f))(*obj(name \"雪梨\")(price 3.2)(isVegetable #f))(*obj(name \"西红柿\")(price 2.5)(isVegetable #t))))(behaviors (*list\"Shopping\"\"Running\"\"Football\")))";
+        // Converting successful required
+        User lessVariableUser = SObjParser.toObject(sobj1, User.class);
+        System.out.println(lessVariableUser);
     }
 }

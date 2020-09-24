@@ -1,7 +1,7 @@
 package org.quanye.sobj;
 
 import org.quanye.sobj.annotation.DateFormat;
-import org.quanye.sobj.exception.NotValidSObjSyntaxException;
+import org.quanye.sobj.exception.InValidSObjSyntaxException;
 import org.quanye.sobj.struct.SObjNode;
 import org.quanye.sobj.tools.C$;
 import org.quanye.sobj.tools.S$;
@@ -19,6 +19,7 @@ import java.util.List;
 
 /**
  * SObj Parser
+ * SObj stand for `symbolic object`
  * This source code is license on the Apache-License v2.0
  *
  * @author QuanyeChen
@@ -41,7 +42,7 @@ public class SObjParser {
     public static final String TRUE_VALUE = "#t";
 
     /**
-     * Parse the Object to the SObj
+     * Parse the Java Object to the SObj
      *
      * @param obj Object
      * @return SObj
@@ -96,10 +97,19 @@ public class SObjParser {
     }
 
 
-    public static <T> T toObject(String sexp, Class<T> clazz) throws NotValidSObjSyntaxException {
+    /**
+     * Parse the SObj to the Java Object
+     *
+     * @param sexp  SObj
+     * @param clazz Resulting object's type
+     * @param <T>   Object's generic type
+     * @return Object
+     * @throws InValidSObjSyntaxException Throws the exception when SObj syntax is non-valid
+     */
+    public static <T> T toObject(String sexp, Class<T> clazz) throws InValidSObjSyntaxException {
         sexp = S$.removeBoilerplateEmptyCode(sexp);
         if (!S$.isValidSexp(sexp)) {
-            throw new NotValidSObjSyntaxException("invalid SObj syntax");
+            throw new InValidSObjSyntaxException("invalid SObj syntax");
         }
         SObjNode lo = toAST(sexp);
         try {

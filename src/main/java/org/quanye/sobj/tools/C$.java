@@ -30,7 +30,7 @@ public class C$ {
 
 
     /**
-     * Whether type-class is the primitive-type
+     * Whether type-class is primitive-type
      *
      * @param clazz object's type class
      * @return When the type clazz is the primitive-type, return true, others false
