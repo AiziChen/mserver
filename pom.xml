@@ -6,7 +6,7 @@
 
     <groupId>org.quanye.sobj</groupId>
     <artifactId>SObj-java</artifactId>
-    <version>1.01</version>
+    <version>1.02</version>
     <build>
         <plugins>
             <plugin>
