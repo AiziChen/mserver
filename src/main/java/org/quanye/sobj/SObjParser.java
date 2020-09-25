@@ -165,6 +165,7 @@ public class SObjParser {
                         String carV = arrNode.getCarValue();
                         while (arrNode != null) {
                             String v = arrNode.getCarValue();
+                            v = C$.trimStr(v);
                             list.add(v);
                             arrNode = arrNode.getCdr();
                         }
@@ -272,4 +273,8 @@ public class SObjParser {
         }
     }
 
+
+    public static String minimize(String sObj) {
+        return S$.minimizeSexp(sObj);
+    }
 }
