@@ -7,6 +7,7 @@ import test.domain.Glasses;
 import test.domain.Goods;
 import test.domain.User;
 
+import java.util.Arrays;
 import java.util.Date;
 
 public class BaseTest {
@@ -50,9 +51,9 @@ public class BaseTest {
         System.out.println("=====serialize to Object result=====\n"
                 + "u1 = " + result);
 
-//        String goodsSobj = SObjParser.fromObject(goodss);
-//        System.out.println(goodsSobj);
-//        Goods[] goods = SObjParser.toObject(goodsSobj, Goods[].class);
+        String goodsSobj = SObjParser.fromObject(goodss);
+        Goods[] goods = SObjParser.toObject(goodsSobj, Goods[].class);
+        System.out.println("=====serialize to Array-Object result=====\n" + Arrays.toString(goods));
     }
 
     @Test
