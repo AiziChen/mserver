@@ -48,51 +48,59 @@ public class SObjParser {
      * @return SObj
      */
     public static String fromObject(Object obj) {
-        StringBuilder result = new StringBuilder(BRACKET_OBJECT);// + obj.getClass().getSimpleName());
+        StringBuilder result = new StringBuilder();
         Class<?> clazz = obj.getClass();
-        Field[] fields = clazz.getDeclaredFields();
-        for (Field field : fields) {
-            field.setAccessible(true);
-            try {
-                Object value = field.get(obj);
-                if (value instanceof String) {
-                    value = String.format("\"%s\"", value);
-                } else if (value instanceof Date) {
-                    Object tmp = value;
-                    value = String.format("\"%s\"", sdf.format(value));
-                    for (Annotation an : field.getAnnotations()) {
-                        if (an instanceof DateFormat) {
-                            DateFormat df = (DateFormat) an;
-                            sdf.applyPattern(df.value());
-                            value = String.format("\"%s\"", sdf.format((Date) tmp));
-                        }
-                    }
-                } else if (value instanceof Boolean) {
-                    value = ((boolean) value) ? TRUE_VALUE : FALSE_VALUE;
-                } else if (value.getClass().isArray()) {
-                    Object[] values = (Object[]) value;
-                    StringBuilder sb = new StringBuilder();
-                    sb.append(BRACKET_LIST);
-                    for (Object v : values) {
-                        if (v instanceof String) {
-                            sb.append('\"').append(v).append('\"');
-                        } else {
-                            sb.append(fromObject(v));
-                        }
-                    }
-                    sb.append(BRACKET_CLOSE);
-                    value = sb.toString();
-                } else if (value.getClass().getClassLoader() != null) {
-                    // If clazz is a user-defined type(in there must the POJO-type), then extract it
-                    value = fromObject(value);
+        if (clazz.isArray()) {
+            // When clazz is an array
+            Object[] values = (Object[]) obj;
+            StringBuilder sb = new StringBuilder();
+            sb.append(BRACKET_LIST);
+            for (Object v : values) {
+                if (v instanceof String) {
+                    sb.append('\"').append(v).append('\"');
+                } else {
+                    sb.append(fromObject(v));
                 }
-                String name = field.getName();
-                result.append(BRACKET_START).append(name).append(SEPARATOR_C).append(value).append(BRACKET_CLOSE);
-            } catch (Exception e) {
-                System.err.println(e.getMessage());
             }
+            sb.append(BRACKET_CLOSE);
+            result.append(sb);
+        } else {
+            // Otherwise clazz is an object
+            StringBuilder sb = new StringBuilder(BRACKET_OBJECT);// + obj.getClass().getSimpleName());
+            Field[] fields = clazz.getDeclaredFields();
+            for (Field field : fields) {
+                field.setAccessible(true);
+                try {
+                    Object value = field.get(obj);
+                    if (value instanceof String) {
+                        value = String.format("\"%s\"", value);
+                    } else if (value instanceof Date) {
+                        Object tmp = value;
+                        value = String.format("\"%s\"", sdf.format(value));
+                        for (Annotation an : field.getAnnotations()) {
+                            if (an instanceof DateFormat) {
+                                DateFormat df = (DateFormat) an;
+                                sdf.applyPattern(df.value());
+                                value = String.format("\"%s\"", sdf.format((Date) tmp));
+                            }
+                        }
+                    } else if (value instanceof Boolean) {
+                        value = ((boolean) value) ? TRUE_VALUE : FALSE_VALUE;
+                    } else if (value.getClass().getClassLoader() != null) {
+                        // If clazz is a user-defined type(in there must the POJO-type), then extract it
+                        value = fromObject(value);
+                    } else if (value.getClass().isArray()){
+                        value = fromObject(value);
+                    }
+                    String name = field.getName();
+                    sb.append(BRACKET_START).append(name).append(SEPARATOR_C).append(value).append(BRACKET_CLOSE);
+                } catch (Exception e) {
+                    System.err.println(e.getMessage());
+                }
+            }
+            sb.append(BRACKET_CLOSE);
+            result.append(sb);
         }
-        result.append(BRACKET_CLOSE);
         return result.toString();
     }
 
@@ -113,12 +121,54 @@ public class SObjParser {
         }
         SObjNode lo = toAST(sexp);
         try {
-            return setValue(lo, clazz.getDeclaredConstructor().newInstance());
+            if (clazz.isArray()) {
+//                return setArrayValue(lo, clazz.getComponentType());
+                return setValue(lo, clazz.getDeclaredConstructor().newInstance());
+            } else {
+                return setValue(lo, clazz.getDeclaredConstructor().newInstance());
+            }
         } catch (Exception e) {
             e.printStackTrace();
             return null;
         }
     }
+
+
+//    private static <T> T setArrayValue(SObjNode sObjNode, Class<?> compClazz) {
+//        SObjNode firstV = sObjNode.getCar();
+//        SObjNode leftV = sObjNode.getCdr();
+//        if (C$.isSObj(firstV)) {
+//            try {
+//                List<Object> list = new LinkedList<>();
+//                while (arrNode != null && arrNode.getCar() != null) {
+//                    Object instance = setValue(arrNode.getCar(), compClazz.getDeclaredConstructor().newInstance());
+//                    list.add(instance);
+//                    arrNode = arrNode.getCdr();
+//                }
+//                if (list.size() > 0) {
+//                    Object arr = Array.newInstance(compClazz, list.size());
+//                    putArray(list, arr, target, key);
+//                }
+//            } catch (ClassNotFoundException | NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
+//                e.printStackTrace();
+//            }
+//        } else {
+//            List<Object> list = new LinkedList<>();
+//            String carV = arrNode.getCarValue();
+//            while (arrNode != null) {
+//                String v = arrNode.getCarValue();
+//                v = C$.trimStr(v);
+//                list.add(v);
+//                arrNode = arrNode.getCdr();
+//            }
+//            if (carV != null && list.size() > 0) {
+//                Object arr = Array.newInstance(C$.getValueType(carV), list.size());
+//                putArray(list, arr, target, key);
+//            }
+//        }
+//        // *list process had been done above, don't need to process by `setValue` ever.
+//        return target;
+//    }
 
 
     private static <T> T setValue(SObjNode sobjNode, T target) {
@@ -141,7 +191,8 @@ public class SObjParser {
                         e.printStackTrace();
                     }
                 } else if (C$.isList(value)) {
-                    SObjNode arrNode = toAST(S$.cdr(value));
+//                    SObjNode arrNode = toAST(S$.cdr(value));
+                    SObjNode arrNode = leftV.getCar().getCdr();
                     if (C$.isSObj(arrNode.getCarValue())) {
                         String pkgName = target.getClass().getPackage().getName();
                         String clazzName = key.substring(0, 1).toUpperCase() + key.substring(1);

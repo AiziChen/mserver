@@ -19,7 +19,7 @@ public class User {
     private Integer id;
     private String name;
     private Integer age;
-    @DateFormat("yyyy-MM-dd hh:mm,ss")
+    @DateFormat("yyyy-MM-dd HH:mm,ss")
     private Date birth;         // Using DateFormat annotations to specify the `DataTime` format above
     private Glasses glasses;
     private Double height;

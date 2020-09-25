@@ -14,7 +14,7 @@ import java.lang.annotation.Target;
 @Retention(value = RetentionPolicy.RUNTIME)
 @Target(value = ElementType.FIELD)
 public @interface DateFormat {
-    public final static String FORMAT_STYLE = "yyyy-MM-dd hh:mm:ss";
+    public final static String FORMAT_STYLE = "yyyy-MM-dd HH:mm:ss";
 
     String value() default FORMAT_STYLE;
 }

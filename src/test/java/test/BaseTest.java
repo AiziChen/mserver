@@ -8,7 +8,6 @@ import test.domain.Goods;
 import test.domain.User;
 
 import java.util.Date;
-import java.util.Objects;
 
 public class BaseTest {
     Glasses glasses = new Glasses(1, 203.3, "RED-BLACK");
@@ -22,9 +21,13 @@ public class BaseTest {
 
     @Test
     public void fromObjectTest() {
-        // Parse to list
+        // Parse to Object
         String u1SObj = SObjParser.fromObject(u1);
-        System.out.println(u1SObj);
+        System.out.println("=====deserialize Object Test Result=====\n" + u1SObj);
+
+        // Parse to List Object
+        String goods = SObjParser.fromObject(goodss);
+        System.out.println("=====deserialize Array-Object Test Result=====\n" + goods);
     }
 
     @Test
@@ -35,7 +38,7 @@ public class BaseTest {
             SObjParser.fromObject(u1);
         }
         long after = System.currentTimeMillis();
-        System.out.println("From 9999 SObj total time: " + (after - before) + "ms");
+        System.out.println(">> From 9999 SObj total time: " + (after - before) + "ms <<");
     }
 
 
@@ -44,8 +47,12 @@ public class BaseTest {
         String u1SObj = SObjParser.fromObject(u1);
         // Print the result object
         User result = SObjParser.toObject(u1SObj, User.class);
-        System.out.println("u1 = " + result);
-        assert u1.toString().equals(result.toString());
+        System.out.println("=====serialize to Object result=====\n"
+                + "u1 = " + result);
+
+//        String goodsSobj = SObjParser.fromObject(goodss);
+//        System.out.println(goodsSobj);
+//        Goods[] goods = SObjParser.toObject(goodsSobj, Goods[].class);
     }
 
     @Test
@@ -57,7 +64,7 @@ public class BaseTest {
             SObjParser.toObject(u1SObj, User.class);
         }
         long after = System.currentTimeMillis();
-        System.out.println("Parse 9999 objects total time: " + (after - before) + "ms");
+        System.out.println(">> Parse 9999 objects total time: " + (after - before) + "ms <<");
     }
 
 
@@ -66,7 +73,7 @@ public class BaseTest {
         String sobj1 = "(*obj(id 1)(uid 0)(name \"DavidChen\")(age 25)(birth \"2020-09-24 09:50,07\")(glasses (*obj(price 115.5)(id 1)(degree 203.3)(color \"RED-BLACK\")))(height 167.3)(goods (*list(*obj(name \"火龙果\")(price 2.3)(isVegetable #f))(*obj(name \"雪梨\")(price 3.2)(isVegetable #f))(*obj(name \"西红柿\")(price 2.5)(isVegetable #t))))(behaviors (*list\"Shopping\"\"Running\"\"Football\")))";
         // Converting successful required
         User lessVariableUser = SObjParser.toObject(sobj1, User.class);
-        System.out.println(lessVariableUser);
+        System.out.println("=====less variable test result=====\n" + lessVariableUser);
     }
 
 
@@ -74,6 +81,8 @@ public class BaseTest {
     public void minimizeTest() throws InValidSObjSyntaxException {
         String u1SObj = SObjParser.fromObject(u1);
         String minimizeU1SObj = SObjParser.minimize(u1SObj);
+        System.out.println("=====minimized test result=====\n" + minimizeU1SObj);
+
         User tmpU1 = SObjParser.toObject(minimizeU1SObj, User.class);
         assert u1.toString().equals(tmpU1.toString());
     }
