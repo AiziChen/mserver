@@ -7,6 +7,7 @@ package test.domain;
 
 /**
  * Glasses
+ *
  * @author Quanyec
  */
 public class Glasses {
@@ -51,5 +52,4 @@ public class Glasses {
     public String toString() {
         return "Glasses{" + "id=" + id + ", degree=" + degree + ", color=" + color + '}';
     }
-    
 }

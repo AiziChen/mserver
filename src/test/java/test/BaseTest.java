@@ -8,6 +8,7 @@ import test.domain.Goods;
 import test.domain.User;
 
 import java.util.Date;
+import java.util.Objects;
 
 public class BaseTest {
     Glasses glasses = new Glasses(1, 203.3, "RED-BLACK");
@@ -44,6 +45,7 @@ public class BaseTest {
         // Print the result object
         User result = SObjParser.toObject(u1SObj, User.class);
         System.out.println("u1 = " + result);
+        assert u1.toString().equals(result.toString());
     }
 
     @Test
@@ -65,5 +67,14 @@ public class BaseTest {
         // Converting successful required
         User lessVariableUser = SObjParser.toObject(sobj1, User.class);
         System.out.println(lessVariableUser);
+    }
+
+
+    @Test
+    public void minimizeTest() throws InValidSObjSyntaxException {
+        String u1SObj = SObjParser.fromObject(u1);
+        String minimizeU1SObj = SObjParser.minimize(u1SObj);
+        User tmpU1 = SObjParser.toObject(minimizeU1SObj, User.class);
+        assert u1.toString().equals(tmpU1.toString());
     }
 }

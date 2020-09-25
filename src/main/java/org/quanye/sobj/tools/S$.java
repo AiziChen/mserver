@@ -37,6 +37,18 @@ public class S$ {
         return sexp;
     }
 
+    public static String minimizeSexp(String sObj) {
+        // example: (name "DavidChen") -> (name"DavidChen")
+        String regex = String.format("(\\s)(\\%c)", '\"');
+        sObj = sObj.replaceAll(regex, "\"");
+
+        // example: (*obj (name"DavidChen")) -> (*obj(name"DavidChen"))
+        regex = String.format("(\\s)(\\%c)", BRACKET_START_C);
+        sObj = sObj.replaceAll(regex, BRACKET_START);
+
+        return sObj;
+    }
+
     public static boolean isValidSexp(String sexp) {
         int lb = 0;
         int rb = 0;
