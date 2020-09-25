@@ -22,7 +22,7 @@ public class S$ {
          *   (name "David")
          *   (age 26))
          */
-        String regex = String.format("(%s)(.*)(\n)", COMMENT_C);
+        String regex = String.format("(%c)(.*)(\n)", COMMENT_C);
         sexp = sexp.replaceAll(regex, "");
 
         // example: (  a  (  b  c  )  ) -> (a(b  c))

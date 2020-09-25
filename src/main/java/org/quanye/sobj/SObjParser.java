@@ -13,7 +13,6 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
@@ -41,8 +40,6 @@ public class SObjParser {
     public static final char COMMENT_C = ';';
     public static final String FALSE_VALUE = "#f";
     public static final String TRUE_VALUE = "#t";
-
-    private static String CLAZZ_NAME = null;
 
     /**
      * Parse the Java Object to the SObj
@@ -139,7 +136,6 @@ public class SObjParser {
 
 
     private static <T> T setArrayValue(SObjNode sObjNode, String pkgName, String compClazzName) {
-        Object target = null;
         List<Object> list = new LinkedList<>();
         SObjNode arrEleNode = sObjNode.getCdr();
         if (C$.isSObj(arrEleNode.getCarValue())) {
@@ -152,10 +148,11 @@ public class SObjParser {
                 }
                 int lSize = list.size();
                 if (lSize > 0) {
-                    target = Array.newInstance(compClazz, lSize);
+                    Object target = Array.newInstance(compClazz, lSize);
                     for (int i = 0; i < lSize; ++i) {
                         Array.set(target, i, list.get(i));
                     }
+                    return (T) target;
                 }
             } catch (NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException | ClassNotFoundException e) {
                 e.printStackTrace();
@@ -170,13 +167,14 @@ public class SObjParser {
             }
             int lSize = list.size();
             if (carV != null && lSize > 0) {
-                target = Array.newInstance(C$.getValueType(carV), lSize);
+                Object target = Array.newInstance(C$.getValueType(carV), lSize);
                 for (int i = 0; i < lSize; ++i) {
                     Array.set(target, i, list.get(i));
                 }
+                return (T) target;
             }
         }
-        return (T)target;
+        return null;
     }
 
 
@@ -195,7 +193,7 @@ public class SObjParser {
                     try {
                         Class<?> clazz = Class.forName(pkgName + "." + clazzName);
                         Object instance = setValue(leftV.getCar(), clazz.getDeclaredConstructor().newInstance());
-                        putField(target, instance, key);
+                        putField(target, key, instance);
                     } catch (ClassNotFoundException | NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
                         e.printStackTrace();
                     }
@@ -203,7 +201,7 @@ public class SObjParser {
                     String pkgName = target.getClass().getPackage().getName();
                     String clazzName = String.format("%s%s", key.substring(0, 1).toUpperCase(), key.substring(1));
                     T arrInstance = setArrayValue(leftV.getCar(), pkgName, clazzName);
-                    putField(target, arrInstance, key);
+                    putField(target, key, arrInstance);
                     // *list process had been done above, don't need to process by `setValue` ever.
                     return arrInstance;
                 } else {
@@ -283,15 +281,7 @@ public class SObjParser {
     }
 
 
-    private static void putArray(List<Object> list, Object arr, Object target, String key) {
-        for (int i = 0; i < list.size(); ++i) {
-            Array.set(arr, i, list.get(i));
-        }
-        putField(target, arr, key);
-    }
-
-
-    private static void putField(Object target, Object instance, String key) {
+    private static void putField(Object target, String key, Object instance) {
         Field field = C$.getFieldByName(target, key);
         if (field != null) {
             field.setAccessible(true);

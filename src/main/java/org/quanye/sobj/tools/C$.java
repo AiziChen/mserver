@@ -63,7 +63,7 @@ public class C$ {
         if (startC == '\'' && endC == '\'') {
             return Character.class;
         } else if (startC == '\"' || startC == '\'') {
-            // symbol is also treat as `String`
+            // `Symbol` type is also treated as `String`
             return String.class;
         } else if (value.contains(".")) {
             return Double.class;
