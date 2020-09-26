@@ -25,11 +25,11 @@ public class BaseTest {
     public void fromObjectTest() {
         // Parse to Object
         String u1SObj = SObjParser.fromObject(u1);
-        System.out.println("=====deserialize Object Test Result=====\n" + u1SObj);
+        System.out.println("=====serialize Object Test Result=====\n" + u1SObj);
 
         // Parse to List Object
         String goods = SObjParser.fromObject(goodss);
-        System.out.println("=====deserialize Array-Object Test Result=====\n" + goods);
+        System.out.println("=====serialize Array-Object Test Result=====\n" + goods);
     }
 
     @Test
@@ -49,12 +49,12 @@ public class BaseTest {
         String u1SObj = SObjParser.fromObject(u1);
         // Print the result object
         User result = SObjParser.toObject(u1SObj, User.class);
-        System.out.println("=====serialize to Object result=====\n"
+        System.out.println("=====deserialize to Object result=====\n"
                 + "u1 = " + result);
 
         String goodsSobj = SObjParser.fromObject(goodss);
         Goods[] goods = SObjParser.toObject(goodsSobj, Goods[].class);
-        System.out.println("=====serialize to Array-Object result=====\n" + Arrays.toString(goods));
+        System.out.println("=====deserialize to Array-Object result=====\n" + Arrays.toString(goods));
     }
 
     @Test
@@ -72,10 +72,13 @@ public class BaseTest {
 
     @Test
     public void lessVariableTest() throws InValidSObjSyntaxException {
-        String sobj1 = "(*obj(id 1)(uid 0)(name \"DavidChen\")(age 25)(birth \"2020-09-24 09:50,07\")(glasses (*obj(price 115.5)(id 1)(degree 203.3)(color \"RED-BLACK\")))(height 167.3)(goods (*list(*obj(name \"火龙果\")(price 2.3)(isVegetable #f))(*obj(name \"雪梨\")(price 3.2)(isVegetable #f))(*obj(name \"西红柿\")(price 2.5)(isVegetable #t))))(behaviors (*list\"Shopping\"\"Running\"\"Football\")))";
-        // Converting successful required
+        String sobj1 = "(*obj(id 1)(uid 0)(name \"DavidChen\")(age 25)(birth \"2020-09-24 09:50,07\")(glasses (*obj(price 115.5)(id 1)(degree 203.3)(color \"RED-BLACK\")))(height 167.3))";
+        // Converting successful required:
         User lessVariableUser = SObjParser.toObject(sobj1, User.class);
-        System.out.println("=====less variable test result=====\n" + lessVariableUser);
+        System.out.println("=====less variable deserialize test result=====\n" + lessVariableUser);
+
+        String u1SObj = SObjParser.fromObject(lessVariableUser);
+        System.out.println("=====less variable serialize test result=====\n" + u1SObj);
     }
 
 

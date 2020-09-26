@@ -76,28 +76,30 @@ public class SObjParser {
                 } catch (IllegalAccessException e) {
                     continue;
                 }
-                if (value instanceof String) {
-                    value = String.format("\"%s\"", value);
-                } else if (value instanceof Date) {
-                    Object tmp = value;
-                    value = String.format("\"%s\"", sdf.format(value));
-                    for (Annotation an : field.getAnnotations()) {
-                        if (an instanceof DateFormat) {
-                            DateFormat df = (DateFormat) an;
-                            sdf.applyPattern(df.value());
-                            value = String.format("\"%s\"", sdf.format((Date) tmp));
+                if (value != null) {
+                    if (value instanceof String) {
+                        value = String.format("\"%s\"", value);
+                    } else if (value instanceof Date) {
+                        Object tmp = value;
+                        value = String.format("\"%s\"", sdf.format(value));
+                        for (Annotation an : field.getAnnotations()) {
+                            if (an instanceof DateFormat) {
+                                DateFormat df = (DateFormat) an;
+                                sdf.applyPattern(df.value());
+                                value = String.format("\"%s\"", sdf.format((Date) tmp));
+                            }
                         }
+                    } else if (value instanceof Boolean) {
+                        value = ((boolean) value) ? TRUE_VALUE : FALSE_VALUE;
+                    } else if (value.getClass().getClassLoader() != null) {
+                        // If clazz is a user-defined type(in there must the POJO-type), then extract it
+                        value = fromObject(value);
+                    } else if (value.getClass().isArray()) {
+                        value = fromObject(value);
                     }
-                } else if (value instanceof Boolean) {
-                    value = ((boolean) value) ? TRUE_VALUE : FALSE_VALUE;
-                } else if (value.getClass().getClassLoader() != null) {
-                    // If clazz is a user-defined type(in there must the POJO-type), then extract it
-                    value = fromObject(value);
-                } else if (value.getClass().isArray()) {
-                    value = fromObject(value);
+                    String name = field.getName();
+                    sb.append(BRACKET_START).append(name).append(SEPARATOR_C).append(value).append(BRACKET_CLOSE);
                 }
-                String name = field.getName();
-                sb.append(BRACKET_START).append(name).append(SEPARATOR_C).append(value).append(BRACKET_CLOSE);
             }
             sb.append(BRACKET_CLOSE);
             result.append(sb);
