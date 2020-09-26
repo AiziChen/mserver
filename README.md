@@ -87,12 +87,12 @@ https://github.com/AiziChen/SObj-typescript.git
 
 ### Performance Test - In (Intel I3 8300, JDK 11.0.8)
 ```shell
-===== deserialize Array-Object Test Result =====
+=====deserialize Array-Object Test Result=====
 (*list(*obj(name "火龙果")(price 2.3)(isVegetable #f))(*obj(name "雪梨")(price 3.2)(isVegetable #f))(*obj(name "西红柿")(price 2.5)(isVegetable #t)))
->> From 9999 SObj total time: 793ms <<
-========== less variable test result ===========
+>> From 9999 SObj total time: 645ms <<
+=====less variable test result=====
 User{id=1, name='DavidChen', age=25, birth=Thu Sep 24 09:50:07 CST 2020, glasses=Glasses{id=1, degree=203.3, color=RED-BLACK}, height=167.3, goods=[Goods{name='火龙果', price=2.3, isVegetable=false}, Goods{name='雪梨', price=3.2, isVegetable=false}, Goods{name='西红柿', price=2.5, isVegetable=true}], behaviors=[Shopping, Running, Football]}
->> Parse 9999 objects total time: 1680ms <<
+>> Parse 9999 objects total time: 1333ms <<
 ```
 ## Syntax
 * `(*obj ...)`  - Object
