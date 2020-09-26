@@ -42,6 +42,10 @@ public class S$ {
         String regex = String.format("(\\s)(\\%c)", '\"');
         sObj = sObj.replaceAll(regex, "\"");
 
+        // example: (name 'DavidChen) -> (name'DavidChen)
+        regex = String.format("(\\s)(\\%c)", '\'');
+        sObj = sObj.replaceAll(regex, "'");
+
         // example: (*obj (name"DavidChen")) -> (*obj(name"DavidChen"))
         regex = String.format("(\\s)(\\%c)", BRACKET_START_C);
         sObj = sObj.replaceAll(regex, BRACKET_START);
