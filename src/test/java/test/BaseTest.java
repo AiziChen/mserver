@@ -3,6 +3,7 @@ package test;
 import org.junit.Test;
 import org.quanye.sobj.SObjParser;
 import org.quanye.sobj.exception.InValidSObjSyntaxException;
+import org.quanye.sobj.struct.SObjNode;
 import test.domain.Glasses;
 import test.domain.Goods;
 import test.domain.User;
@@ -86,5 +87,16 @@ public class BaseTest {
 
         User tmpU1 = SObjParser.toObject(minimizeU1SObj, User.class);
         assert u1.toString().equals(tmpU1.toString());
+    }
+
+
+    @Test
+    public void getSObjNodeTest() {
+        String u1SObj = SObjParser.fromObject(u1);
+        SObjNode node = SObjParser.getRootNode(u1SObj);
+        String name = node.getNode("name").getValue(String.class);
+        assert name.equals(u1.getName());
+        Double glassDegree = node.getNode("glasses").getValue(Glasses.class).getDegree();
+        assert glassDegree.equals(u1.getGlasses().getDegree());
     }
 }

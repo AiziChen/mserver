@@ -138,7 +138,7 @@ public class SObjParser {
     private static <T> T setArrayValue(SObjNode sObjNode, String pkgName, String compClazzName) {
         List<Object> list = new LinkedList<>();
         SObjNode arrEleNode = sObjNode.getCdr();
-        if (C$.isSObj(arrEleNode.getCarValue())) {
+        if (C$.isSObj(arrEleNode.getNodeValue())) {
             try {
                 Class<?> compClazz = Class.forName(String.format("%s.%s", pkgName, compClazzName));
                 while (arrEleNode != null && arrEleNode.getCar() != null) {
@@ -158,9 +158,9 @@ public class SObjParser {
                 e.printStackTrace();
             }
         } else {
-            String carV = arrEleNode.getCarValue();
+            String carV = arrEleNode.getNodeValue();
             while (arrEleNode != null) {
-                String v = arrEleNode.getCarValue();
+                String v = arrEleNode.getNodeValue();
                 v = C$.trimStr(v);
                 list.add(v);
                 arrEleNode = arrEleNode.getCdr();
@@ -184,9 +184,9 @@ public class SObjParser {
 
         // Key
         if (firstV == null && leftV != null) {
-            String key = sobjNode.getCarValue();
+            String key = sobjNode.getNodeValue();
             if (!(key.equals(OBJECT_NAME) || key.equals(LIST_NAME))) {
-                String value = leftV.getCarValue();
+                String value = leftV.getNodeValue();
                 if (C$.isSObj(value)) {
                     String pkgName = target.getClass().getPackage().getName();
                     String clazzName = String.format("%s%s", key.substring(0, 1).toUpperCase(), key.substring(1));
@@ -291,6 +291,11 @@ public class SObjParser {
                 e.printStackTrace();
             }
         }
+    }
+
+
+    public static SObjNode getRootNode(String sObj) {
+        return toAST(sObj);
     }
 
 

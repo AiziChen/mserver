@@ -100,6 +100,7 @@ User{id=1, name='DavidChen', age=25, birth=Thu Sep 24 09:50:07 CST 2020, glasses
 * `(*list ...)` - Array
 
 ## Usage
+> 1.Basic Usage.
 ```java
 import org.quanye.sobj.SObjParser;
 import xxx.xxx.User;
@@ -110,4 +111,20 @@ User user = new User(xxx, yyy, ....);
 String sUser = SObjParser.fromObject(user);
 // then: DeSerialize SObj to Java Object
 User user = SObjParser.toObject(sUser, User.class);
+```
+> 2.SObjNode Usage.
+```java
+SObjNode rootNode = SObjParser.getRootNode(sUser);
+// sample 1: get the User's name
+SObjNode nameNode = rootNode.getNode("name");
+if (sUser != null) {
+    String name = nameNode.getValue(String.class);
+}
+// sample 2: get the User's glasses
+SObjNode glassesNode = rootNode.getNode("glasses");
+if (glassesNode != null) {
+    Glasses glasses = glassesNode.getValue(Glasses.class);
+    // then, use can use this glasses Object below
+    System.out.println(glasses.getDegree());
+}
 ```
