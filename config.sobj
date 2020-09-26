@@ -1,0 +1,10 @@
+(*obj
+    ;; listen port
+    (listenPort 7878)
+    ;; destinations
+    (destinations
+     (*list
+        (*obj (host "localhost") (port 8081) (paths (*list "/")))
+        (*obj (host "localhost") (port 8080) (paths (*list "/service" "/serve")))))
+    ;; others
+)
