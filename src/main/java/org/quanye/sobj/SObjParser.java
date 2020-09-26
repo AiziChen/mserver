@@ -70,8 +70,13 @@ public class SObjParser {
             Field[] fields = clazz.getDeclaredFields();
             for (Field field : fields) {
                 field.setAccessible(true);
+                Object value = null;
                 try {
-                    Object value = field.get(obj);
+                    value = field.get(obj);
+                } catch (IllegalAccessException e) {
+                    e.printStackTrace();
+                }
+                if (value != null) {
                     if (value instanceof String) {
                         value = String.format("\"%s\"", value);
                     } else if (value instanceof Date) {
@@ -94,12 +99,10 @@ public class SObjParser {
                     }
                     String name = field.getName();
                     sb.append(BRACKET_START).append(name).append(SEPARATOR_C).append(value).append(BRACKET_CLOSE);
-                } catch (Exception e) {
-                    System.err.println(e.getMessage());
                 }
+                sb.append(BRACKET_CLOSE);
+                result.append(sb);
             }
-            sb.append(BRACKET_CLOSE);
-            result.append(sb);
         }
         return result.toString();
     }
