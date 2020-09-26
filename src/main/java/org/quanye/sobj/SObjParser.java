@@ -121,17 +121,16 @@ public class SObjParser {
             throw new InValidSObjSyntaxException("invalid SObj syntax");
         }
         SObjNode lo = toAST(sexp);
-        try {
-            if (clazz.isArray()) {
-                Class<?> compClazz = clazz.getComponentType();
-                String pkgName = compClazz.getPackage().getName();
-                return setArrayValue(lo, pkgName, compClazz.getSimpleName());
-            } else {
+        if (clazz.isArray()) {
+            Class<?> compClazz = clazz.getComponentType();
+            String pkgName = compClazz.getPackage().getName();
+            return setArrayValue(lo, pkgName, compClazz.getSimpleName());
+        } else {
+            try {
                 return setValue(lo, clazz.getDeclaredConstructor().newInstance());
+            } catch (InstantiationException | NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+                return null;
             }
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
         }
     }
 
