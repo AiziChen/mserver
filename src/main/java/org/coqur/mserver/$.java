@@ -17,17 +17,11 @@ public class $ {
 
     public long hexToLong(String hex) {
         int len = hex.length();
-        int i = 0;
         if (len == 0) {
             return 0;
         }
-        int base = 1;
-        if (hex.charAt(0) == '-') {
-            base = -1;
-            i = 1;
-        }
         long total = 0;
-        for (; i < len; ++i) {
+        for (int i = 0; i < len; ++i) {
             char c = hex.charAt(i);
             if (c >= '0' && c <= '9') {
                 int n = c - '0';
@@ -41,7 +35,7 @@ public class $ {
             }
         }
 
-        return base * total;
+        return total;
     }
 
 
