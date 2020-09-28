@@ -14,8 +14,8 @@ public class RequestHeaderTest {
         assert rh.getRequestUri().equals("/chatware/chatroom.php");
         assert rh.getHttpVersion().equals("HTTP/1.1");
 
-        assert rh.get("Host").equals("www.myfavoritewebsite.com:8080");
-        assert rh.get("Server").equals("mserver v0.1.0");
+        assert rh.get("host").equals("www.myfavoritewebsite.com:8080");
+        assert rh.get("server").equals("mserver v0.1.0");
     }
 
 }
