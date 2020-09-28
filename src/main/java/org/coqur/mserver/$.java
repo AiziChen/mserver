@@ -1,5 +1,8 @@
 package org.coqur.mserver;
 
+import java.io.IOException;
+import java.io.InputStream;
+
 /**
  * Tools
  *
@@ -8,7 +11,11 @@ package org.coqur.mserver;
 public class $ {
     private final static int HEX_BASE_SIZE = 16;
 
-    public static long hexToLong(String hex) {
+    public static $ newInstance() {
+        return new $();
+    }
+
+    public long hexToLong(String hex) {
         int len = hex.length();
         int i = 0;
         if (len == 0) {
@@ -35,5 +42,18 @@ public class $ {
         }
 
         return base * total;
+    }
+
+
+    public String readLine(InputStream is) throws IOException {
+        StringBuilder sb = new StringBuilder();
+        int b;
+        while ((b = is.read()) != -1) {
+            sb.append((char) b);
+            if (b == '\n') {
+                return sb.toString();
+            }
+        }
+        return null;
     }
 }

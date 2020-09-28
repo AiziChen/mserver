@@ -1,10 +1,28 @@
 package org.coqur.mserver.struct;
 
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+
 public class RequestHeader {
     private String header;
+    private Map<String, String> headerMap;
 
     public RequestHeader(String header) {
         this.header = header;
+        this.headerMap = new HashMap<>();
+        header.lines().forEach(h -> {
+            if (h.contains(":")) {
+                int i = h.indexOf(":");
+                String key = h.substring(0, i).trim().toLowerCase();
+                String value = h.substring(i + 1).trim().toLowerCase();
+                headerMap.put(key, value);
+            }
+        });
+    }
+
+    public String get(String key) {
+        return headerMap.get(key);
     }
 
     public String getFirstLine() {
@@ -46,4 +64,11 @@ public class RequestHeader {
         this.header = header;
     }
 
+    public Map<String, String> getHeaderMap() {
+        return headerMap;
+    }
+
+    public void setHeaderMap(Map<String, String> headerMap) {
+        this.headerMap = headerMap;
+    }
 }

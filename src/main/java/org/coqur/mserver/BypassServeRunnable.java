@@ -4,7 +4,10 @@ import org.coqur.mserver.record.Config;
 import org.coqur.mserver.record.Destinations;
 import org.coqur.mserver.struct.RequestHeader;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.PrintStream;
 import java.net.Socket;
 import java.util.logging.Level;
 
@@ -13,10 +16,12 @@ import static org.coqur.mserver.Main.LOGGER;
 public class BypassServeRunnable implements Runnable {
     private final Socket socket;
     private final Config config;
+    private final $ tools;
 
     public BypassServeRunnable(Socket s, Config config) {
         this.socket = s;
         this.config = config;
+        this.tools = $.newInstance();
     }
 
     @Override
@@ -27,17 +32,16 @@ public class BypassServeRunnable implements Runnable {
             /* Socket Operation */
             InputStream is = socket.getInputStream();
             OutputStream os = socket.getOutputStream();
-            BufferedReader br = new BufferedReader(new InputStreamReader(is));
+            StringBuilder hsb = new StringBuilder();
             String line;
-            StringBuilder sb = new StringBuilder();
-            while ((line = br.readLine()) != null) {
-                sb.append(line).append("\r\n");
-                if (line.isEmpty()) {
+            while ((line = tools.readLine(is)) != null) {
+                hsb.append(line);
+                if (line.isBlank()) {
                     break;
                 }
             }
             /* Modify headers */
-            String header = sb.toString();
+            String header = hsb.toString();
             String listenUrl = String.format("%s:%s", hostName, config.listenPort);
             for (Destinations d : config.destinations) {
                 String reqUri = new RequestHeader(header).getRequestUri();
@@ -70,25 +74,53 @@ public class BypassServeRunnable implements Runnable {
         header.lines().forEach(ps::println);
         // reading data
         InputStream dis = ds.getInputStream();
-        String contentLength = null;
+        StringBuilder dhsb = new StringBuilder();
         String line;
-        while (!(line = readLine(dis)).isBlank()) {
-            os.write((line).getBytes());
-            if (line.toLowerCase().startsWith("content-length")) {
-                contentLength = line.substring("content-length:".length()).trim();
+        while ((line = tools.readLine(dis)) != null) {
+            os.write(line.getBytes());
+            dhsb.append(line);
+            if (line.isBlank()) {
+                break;
             }
         }
-        os.write("\r\n".getBytes());
-        System.out.println(contentLength);
-        if (contentLength == null) {
-            int hasRead;
-            byte[] buff = new byte[2048];
-            while ((hasRead = dis.read(buff)) != -1) {
-                System.out.println(new String(buff, 0, hasRead));
-                os.write(buff, 0, hasRead);
+        RequestHeader drh = new RequestHeader(dhsb.toString());
+        String scl = drh.get("content-length");
+        if (scl == null) {
+            String transferEncoding = drh.get("transfer-encoding");
+            if (transferEncoding != null) {
+                if (transferEncoding.equals("chunked")) {
+                    // `transfer-encoding` value is chunked
+                    while (true) {
+                        String chunkedLenStr = tools.readLine(dis);
+                        if (chunkedLenStr == null) {
+                            break;
+                        }
+                        os.write(chunkedLenStr.getBytes());
+
+                        chunkedLenStr = chunkedLenStr.trim();
+                        if (chunkedLenStr.equals("0")) {
+//                            System.out.println("chunked code is now zero.");
+                            os.write("\r\n".getBytes());
+                            break;
+                        }
+                        long chunkedLen = tools.hexToLong(chunkedLenStr);
+                        int b;
+                        for (int totalRead = 0; (b = dis.read()) != -1; totalRead++) {
+                            os.write(b);
+                            if (totalRead >= chunkedLen + 1) {
+                                break;
+                            }
+                        }
+                    }
+                } else {
+                    // `transfer-encoding` value is not chunked
+                }
+            } else {
+                // both of no `content-length` and `transfer-encoding`
             }
         } else {
-            int cLen = Integer.parseInt(contentLength);
+            // read the `content-length` length
+            int cLen = Integer.parseInt(scl);
             int totalRead = 0;
             int hasRead;
             byte[] buff = new byte[2048];
@@ -100,17 +132,7 @@ public class BypassServeRunnable implements Runnable {
                 }
             }
         }
+        os.close();
     }
 
-    private String readLine(InputStream is) throws IOException {
-        StringBuilder sb = new StringBuilder();
-        int b;
-        while ((b = is.read()) != -1) {
-            sb.append((char) b);
-            if (b == '\n') {
-                return sb.toString();
-            }
-        }
-        return sb.toString();
-    }
 }
