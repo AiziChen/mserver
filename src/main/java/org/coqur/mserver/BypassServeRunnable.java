@@ -70,10 +70,47 @@ public class BypassServeRunnable implements Runnable {
         header.lines().forEach(ps::println);
         // reading data
         InputStream dis = ds.getInputStream();
-        byte[] buff = new byte[2048];
-        int hasRead;
-        while ((hasRead = dis.read(buff)) != -1) {
-            os.write(buff, 0, hasRead);
+        String contentLength = null;
+        String line;
+        while (!(line = readLine(dis)).isBlank()) {
+            os.write((line).getBytes());
+            if (line.toLowerCase().startsWith("content-length")) {
+                contentLength = line.substring("content-length:".length()).trim();
+            }
         }
+        os.write("\r\n".getBytes());
+        System.out.println(contentLength);
+        if (contentLength == null) {
+            int hasRead;
+            byte[] buff = new byte[2048];
+            while ((hasRead = dis.read(buff)) != -1) {
+                System.out.println(new String(buff, 0, hasRead));
+                os.write(buff, 0, hasRead);
+            }
+        } else {
+            int cLen = Integer.parseInt(contentLength);
+            int totalRead = 0;
+            int hasRead;
+            byte[] buff = new byte[2048];
+            while ((hasRead = dis.read(buff)) != -1) {
+                os.write(buff, 0, hasRead);
+                totalRead += hasRead;
+                if (totalRead >= cLen) {
+                    break;
+                }
+            }
+        }
+    }
+
+    private String readLine(InputStream is) throws IOException {
+        StringBuilder sb = new StringBuilder();
+        int b;
+        while ((b = is.read()) != -1) {
+            sb.append((char) b);
+            if (b == '\n') {
+                return sb.toString();
+            }
+        }
+        return sb.toString();
     }
 }
