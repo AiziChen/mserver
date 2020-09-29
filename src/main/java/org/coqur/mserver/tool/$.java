@@ -13,6 +13,9 @@ import java.io.InputStream;
 public class $ {
     private final static int HEX_BASE_SIZE = 16;
 
+    private $() {
+    }
+
     public static $ newInstance() {
         return new $();
     }

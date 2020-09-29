@@ -40,7 +40,7 @@ public class Net$ {
 
             chunkedLenStr = chunkedLenStr.trim();
             if (chunkedLenStr.equals("0")) {
-//                System.out.println("chunked code is now zero.");
+                System.out.println("chunked code is now zero.");
                 cos.write("\r\n".getBytes());
                 break;
             }
