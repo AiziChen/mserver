@@ -66,4 +66,18 @@ public class Net$ {
         }
         return hsb.toString();
     }
+
+
+    public String readIsHeaderAndWriteToDos(InputStream is, OutputStream dos) throws IOException {
+        StringBuilder hsb = new StringBuilder();
+        String line;
+        while ((line = tools.readLine(is)) != null) {
+            dos.write(line.getBytes());
+            hsb.append(line);
+            if (line.isBlank()) {
+                break;
+            }
+        }
+        return hsb.toString();
+    }
 }

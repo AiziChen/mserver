@@ -35,8 +35,8 @@ public class BypassServeRunnable implements Runnable {
             /* Socket Operation */
             InputStream is = socket.getInputStream();
             OutputStream os = socket.getOutputStream();
-            /* Modify headers */
             String header = netTools.readIsHeader(is);
+            /* Modify headers */
             String listenUrl = String.format("%s:%s", hostName, config.listenPort);
             for (Destinations d : config.destinations) {
                 String reqUri = new RequestHeader(header).getRequestUri();
@@ -69,7 +69,7 @@ public class BypassServeRunnable implements Runnable {
         header.lines().forEach(ps::println);
         // reading data
         InputStream dis = ds.getInputStream();
-        String dHeader = netTools.readIsHeader(dis);
+        String dHeader = netTools.readIsHeaderAndWriteToDos(dis, os);
         RequestHeader drh = new RequestHeader(dHeader);
         String scl = drh.get("content-length");
         if (scl == null) {
@@ -80,6 +80,7 @@ public class BypassServeRunnable implements Runnable {
                     netTools.writeChunked(dis, os);
                 } else {
                     // `transfer-encoding` value is not chunked
+                    System.out.println(transferEncoding);
                 }
             } else {
                 // both of no `content-length` and `transfer-encoding`
