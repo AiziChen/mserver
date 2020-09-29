@@ -1,5 +1,7 @@
 package org.coqur.mserver;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -15,7 +17,7 @@ public class $ {
         return new $();
     }
 
-    public long hexToLong(String hex) {
+    public long hexToLong(@NotNull String hex) {
         int len = hex.length();
         if (len == 0) {
             return 0;
@@ -39,6 +41,13 @@ public class $ {
     }
 
 
+    /**
+     * Read line from user specify inputStream
+     *
+     * @param is inputStream
+     * @return one line that contains new-line-character: `\r\n` or `\n`
+     * @throws IOException When inputStream's read failed
+     */
     public String readLine(InputStream is) throws IOException {
         StringBuilder sb = new StringBuilder();
         int b;
