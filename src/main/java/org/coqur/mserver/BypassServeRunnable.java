@@ -53,7 +53,7 @@ public class BypassServeRunnable implements Runnable {
                         try {
                             bypassProcess(os, header, d.host, d.port);
                         } catch (IOException e) {
-                            LOGGER.log(Level.WARNING, e.getMessage());
+                            LOGGER.error(e.getMessage());
                         }
                         break;
                     }
